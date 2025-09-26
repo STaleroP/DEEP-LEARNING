@@ -14,7 +14,7 @@ PROGRAM Poisson2D
      write(6,*)'número de puntos en la grilla en la direccion X?'
      read(5,*)Nx
   else
-     write(6,*)'número de puntos en la grilla en la direccionYX?'
+     write(6,*)'número de puntos en la grilla en la direccion Y?'
      read(5,*)Ny
   end if
   write(6,*)'potencial en las fronteras (Vx1 Vx2 Vy1 Vy2) en Voltios'
@@ -24,7 +24,7 @@ PROGRAM Poisson2D
   write(6,*)'presición en la convergencia para la relajación'
   read(5,*)eps
   
-  !informacion de la grilla y localiza memoria
+  !informacion de la grilla y localización de memoria
   if(Lx.le.Ly)then
      h=Lx/Nx; Ny=int(Ly/h)
   else
