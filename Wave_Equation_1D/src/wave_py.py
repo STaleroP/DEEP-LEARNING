@@ -19,7 +19,7 @@ else:
 # Physical params
 L = 100.0
 c = 10.0
-T = 15.0
+T = 100.0
 
 # Mesh
 h = L / m

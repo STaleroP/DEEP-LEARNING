@@ -22,7 +22,7 @@ int main(int argc, char** argv){
     const double h = L / m;
     const double Lambda = 0.8;
     const double k = Lambda * h / c;
-    const double T = 15.0;
+    const double T = 100.0;
     const int nt = static_cast<int>(ceil(T / k));
     const int n_inner = m - 1;
 

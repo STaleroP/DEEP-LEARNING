@@ -9,14 +9,13 @@ program wave_fortran
   real(dp), allocatable :: snapshots(:,:), times(:)
   character(len=32) :: arg
   character(len=128) :: outdir, csvfile, errfile, timefile
-  logical :: arg_present
   intrinsic :: ceiling
   
   ! defaults
   L = 100.0_dp
   c = 10.0_dp
   m = 100
-  T = 15.0_dp
+  T = 100.0_dp
   Lambda = 0.8_dp
 
   call get_command_argument(1, arg, status=ios)

@@ -5,7 +5,7 @@ FC=gfortran
 CXXFLAGS=-O3 -march=native -std=c++17
 FFLAGS=-O3 -march=native
 
-MS = 1000 2000 4000 8000
+MS = 1000
 
 .PHONY: all build run clean graphs
 
@@ -43,7 +43,7 @@ graphs:
 
 animation:
 	@echo "Generando animaciones (animation.py)..."
-	$(PY) src/animation.py /home/byob/Documents/Computational/Physical-Modeling/Test\ 01/results/Cpp/m_1000/
+	$(PY) src/animation.py /home/byob/Documents/Computational/Physical-Modeling/Wave_Equation_1D/results/Cpp/m_1000
 	@echo "Animaciones generadas."
 
 clean:

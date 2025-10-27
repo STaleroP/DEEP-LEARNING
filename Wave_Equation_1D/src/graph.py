@@ -3,38 +3,32 @@
 graph.py
 Lee los resultados en results/{Python,Cpp,Fortran}/m_{m}/ y genera:
  - Gráfico de errores L2 a lo largo del tiempo para cada implementación
- - Gráfico de tiempos de cálculo vs m (log-log)
- - Gráfico de convergencia: L2 error final vs m (log-log)
+ - Gráfico de tiempos de cálculo vs malla (log-log)
+ - Gráfico de convergencia: L2 error final vs malla (log-log)
  - Gráfico de rendimiento comparativo en porcentajes
 """
-import os, glob
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
+import os, glob                     # Manipulación de rutas y archivos
+import numpy as np                  # Cálculos numéricos
+import matplotlib.pyplot as plt     # Gráficos
+import pandas as pd                 # Manejo de datos tabulares
 
 base = "results"
 impls = {"Python":"Python", "Cpp":"Cpp", "Fortran":"Fortran"}
 MS = sorted([int(os.path.basename(d).split('_')[1]) for d in glob.glob(os.path.join(base,"Python","m_*"))]) \
      if glob.glob(os.path.join(base,"Python","m_*")) else [100,200,400,800,1600]
 
-# Coleccionar datos
+# Listas de datos
 timings = {"Python":[], "Cpp":[], "Fortran":[]}
 errors_final = {"Python":[], "Cpp":[], "Fortran":[]}
-errors_evolution = {"Python":{}, "Cpp":{}, "Fortran":{}}  # por cada m
+errors_evolution = {"Python":{}, "Cpp":{}, "Fortran":{}}  # por cada malla 'm'
 speedup_data = []  # para guardar datos de rendimiento
 
-print("="*60)
-print("ANÁLISIS DE RESULTADOS")
-print("="*60)
-
 for m in MS:
-    print(f"\n--- Procesando m = {m} ---")
-    
     # Cargar datos de cada implementación
     for key, sub in impls.items():
         folder = os.path.join(base, sub, f"m_{m}")
         if not os.path.isdir(folder):
-            print(f"  ⚠️  Missing {folder}")
+            print(f"Missing {folder}")
             timings[key].append(np.nan)
             errors_final[key].append(np.nan)
             continue
@@ -61,13 +55,7 @@ for m in MS:
 # Crear directorio de plots
 os.makedirs("plots", exist_ok=True)
 
-# =============================================================================
 # GRÁFICO 1: Evolución temporal de errores L2 para cada m
-# =============================================================================
-print("\n" + "="*60)
-print("Generando gráficos de evolución temporal de errores...")
-print("="*60)
-
 for m in MS:
     plt.figure(figsize=(10, 6))
     has_data = False
@@ -89,18 +77,12 @@ for m in MS:
         plt.tight_layout()
         out = os.path.join("plots", f"error_evolution_m_{m}.png")
         plt.savefig(out, dpi=150)
-        print(f"  ✓ Guardado: {out}")
+        print(f"Guardado: {out}")
         plt.close()
 
-# =============================================================================
 # GRÁFICO 2: Tiempos de cálculo vs m (log-log)
-# =============================================================================
-print("\n" + "="*60)
-print("Generando gráfico de tiempos de cálculo vs m...")
-print("="*60)
-
 plt.figure(figsize=(10, 6))
-colors = {'Python': '#3776ab', 'Cpp': '#00599C', 'Fortran': '#734f96'}
+colors = {'Python': "#c96f09", 'Cpp': '#00599C', 'Fortran': '#734f96'}
 markers = {'Python': 'o', 'Cpp': 's', 'Fortran': '^'}
 
 for key in ['Python', 'Cpp', 'Fortran']:
@@ -120,16 +102,10 @@ plt.legend(fontsize=11)
 plt.grid(True, alpha=0.3, which='both')
 plt.tight_layout()
 plt.savefig("plots/timing_vs_m.png", dpi=150)
-print("  ✓ Guardado: plots/timing_vs_m.png")
+print("Guardado: plots/timing_vs_m.png")
 plt.close()
 
-# =============================================================================
 # GRÁFICO 3: Convergencia - Error L2 final vs m (log-log)
-# =============================================================================
-print("\n" + "="*60)
-print("Generando gráfico de convergencia...")
-print("="*60)
-
 plt.figure(figsize=(10, 6))
 for key in ['Python', 'Cpp', 'Fortran']:
     errs = np.array(errors_final[key], dtype=float)
@@ -148,16 +124,10 @@ plt.legend(fontsize=11)
 plt.grid(True, alpha=0.3, which='both')
 plt.tight_layout()
 plt.savefig("plots/error_vs_m.png", dpi=150)
-print("  ✓ Guardado: plots/error_vs_m.png")
+print("Guardado: plots/error_vs_m.png")
 plt.close()
 
-# =============================================================================
 # GRÁFICO 4: Comparación de rendimiento en porcentajes
-# =============================================================================
-print("\n" + "="*60)
-print("ANÁLISIS DE RENDIMIENTO COMPARATIVO")
-print("="*60)
-
 # Calcular speedups y guardar datos
 for idx, m in enumerate(MS):
     tpy = timings['Python'][idx]
@@ -179,7 +149,7 @@ for idx, m in enumerate(MS):
         times_list.append((tfort, 'Fortran'))
     
     if len(times_list) < 2:
-        print("  ⚠️  Datos insuficientes para comparación")
+        print("Datos insuficientes para comparación")
         continue
     
     times_list.sort()
@@ -189,9 +159,9 @@ for idx, m in enumerate(MS):
     # Calcular porcentaje de ventaja
     advantage = (slowest[0] - fastest[0]) / slowest[0] * 100.0
     
-    print(f"  → Más rápido: {fastest[1]} ({fastest[0]:.6f}s)")
-    print(f"  → Más lento:  {slowest[1]} ({slowest[0]:.6f}s)")
-    print(f"  → Ventaja:    {advantage:.2f}%")
+    print(f"Más rápido: {fastest[1]} ({fastest[0]:.6f}s)")
+    print(f"Más lento:  {slowest[1]} ({slowest[0]:.6f}s)")
+    print(f"Ventaja:    {advantage:.2f}%")
     
     # Guardar datos para gráfico
     speedup_data.append({
@@ -207,10 +177,10 @@ for idx, m in enumerate(MS):
     if not np.isnan(tpy):
         if not np.isnan(tcpp):
             speedup_cpp = tpy / tcpp
-            print(f"  → Speedup C++ vs Python:    {speedup_cpp:.2f}x")
+            print(f"Speedup C++ vs Python:    {speedup_cpp:.2f}x")
         if not np.isnan(tfort):
             speedup_fort = tpy / tfort
-            print(f"  → Speedup Fortran vs Python: {speedup_fort:.2f}x")
+            print(f"Speedup Fortran vs Python: {speedup_fort:.2f}x")
 
 # Gráfico de barras de ventaja porcentual
 if speedup_data:
@@ -280,18 +250,5 @@ if speedup_data:
     
     plt.tight_layout()
     plt.savefig("plots/performance_comparison.png", dpi=150)
-    print("\n  ✓ Guardado: plots/performance_comparison.png")
+    print("\n Guardado: plots/performance_comparison.png")
     plt.close()
-
-# =============================================================================
-# RESUMEN FINAL
-# =============================================================================
-print("\n" + "="*60)
-print("RESUMEN DE GRÁFICOS GENERADOS")
-print("="*60)
-print(f"  1. Evolución temporal de errores L2: {len(MS)} gráficos")
-print("  2. Tiempos de cálculo vs m: plots/timing_vs_m.png")
-print("  3. Convergencia de error: plots/error_vs_m.png")
-print("  4. Comparación de rendimiento: plots/performance_comparison.png")
-print("\n✓ Todos los gráficos guardados en el directorio /plots")
-print("="*60)
