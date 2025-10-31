@@ -1,0 +1,222 @@
+\documentclass{replab}
+\input{libraries/packages}
+\hypersetup{
+    pdftitle={Diferencias Finitas - Ecuación de Onda 1D}
+    colorlinks=true,
+    linkcolor=prussian,
+    citecolor=prussian,
+    filecolor=prussian,
+    urlcolor=prussian,
+    }
+    
+% --- Información del documento ---
+\title{Background}
+\subtitle={Diferencias Finitas - Ecuación de Onda 1D}
+\author{Santiago Talero Parra}
+\date{\today}
+\subject={Modelamiento Físico Computacional}
+\email={\href{mailto:stalerop@udistrital.edu.co}{\texttt{stalerop@udistrital.edu.co}}}
+
+% --- Inicio del documento ---
+\begin{document}
+\pagestyle{fancy}
+\unspacedoperators
+\begin{center}
+    \maketitle{\hrulefill}
+\end{center}
+\selectlanguage{spanish}
+
+% --- Cuerpo del reporte ---
+
+\section*{Ecuación de ondas}
+Para ilustrar como se hallar una solución aproximada de una EDP hiperbólica, vamos a considerar la denominada ecuación de ondas:
+\begin{equation*}
+	\frac{\partial^2}{\partial t^2}u(x,t) - c^2 \frac{\partial^2}{\partial x^2}u(x,t) = 0, \quad x \in [0,L], \quad t > 0,
+\end{equation*}
+
+que modela la vibración de una cuerda elástica de longitud $L$ a lo largo del tiempo $t$ y $\alpha$ es un parámetro que depende de la cuerda considerada. EL valor de $c$ depende de las propiedades físicas del medio en el que se propaga la onda. En este caso, $u(x,t)$ representa el desplazamiento vertical de la cuerda en la posición $x$ y en el tiempo $t$. La ecuación de ondas es una EDP de segundo orden en el tiempo y en el espacio. Para resolver este problema, es necesario especificar las condiciones iniciales y de frontera. Las condiciones iniciales son:
+\begin{align*}
+	u(x,0) &= f(x), \quad x \in [0,L], \\
+	\frac{\partial}{\partial t}u(x,0) &= g(x), \quad x \in [0,L],
+\end{align*}
+donde $f(x)$ y $g(x)$ son funciones dadas que representan la posición inicial y la velocidad inicial de la cuerda, respectivamente. Las condiciones de frontera son:
+\begin{align*}
+	u(0,t) &= 0, \quad t \geq 0, \\
+	u(L,t) &= 0, \quad t \geq 0,
+\end{align*}
+lo que significa que los extremos de la cuerda están fijos en el tiempo.
+
+\section*{Malla}
+
+Seleccionamos el paso espacial o para la variable $x$ como un entero $m > 0$ y definimos $h = \frac{L}{m}$. Luego, definimos los nodos espaciales como $x_i = ih$ para $i = 0, 1, \ldots, m$. De manera similar, seleccionamos el paso temporal o para la variable $t$ como un entero $k > 0$ y definimos $t_j = jk$ para $j = 0, 1, \ldots$. El objetivo es hallar una aproximación $\hat{u}(x_i,t_j), \quad i=0,1, \ldots, m \quad j=0,1, \ldots$ en los puntos del mallado. 
+
+\section*{Esquema de diferencias finitas}
+Para aproximar las derivadas parciales en la ecuación de ondas, utilizamos diferencias finitas centradas. La segunda derivada temporal se aproxima como:
+\begin{equation*}
+	\frac{\partial^2}{\partial t^2}u(x_i,t_j) \approx \frac{u(x_i,t_{j+1}) - 2u(x_i,t_j) + u(x_i,t_{j-1})}{k^2}
+\end{equation*}
+y la segunda derivada espacial se aproxima como:
+\begin{equation*}
+	\frac{\partial^2}{\partial x^2}u(x_i,t_j) \approx \frac{u(x_{i+1},t_j) - 2u(x_i,t_j) + u(x_{i-1},t_j)}{h^2}
+\end{equation*}
+Sustituyendo estas aproximaciones en la ecuación de ondas, obtenemos:
+\begin{equation*}
+	\frac{u(x_i,t_{j+1}) - 2u(x_i,t_j) + u(x_i,t_{j-1})}{k^2} - c^2 \frac{u(x_{i+1},t_j) - 2u(x_i,t_j) + u(x_{i-1},t_j)}{h^2} = 0
+\end{equation*}
+Reorganizando esta ecuación, obtenemos el esquema de diferencias finitas explícito:
+\begin{equation}
+	u(x_i,t_{j+1}) = 2u(x_i,t_j) - u(x_i,t_{j-1}) + \lambda^2 \left( u(x_{i+1},t_j) - 2u(x_i,t_j) + u(x_{i-1},t_j) \right)
+	\label{eqn1}
+\end{equation}
+donde $\lambda = \frac{\alpha k}{h}$ es el número de Courant.\\
+
+El sistema de ecuaciones que verifica el vector de aproximaciones $\hat{u}^{(j+1)}$ está dado por la ecuación \ref{eqn1} para $i=1, 2, \ldots, m-1$ y las condiciones de frontera $\hat{u}^{(j+1)}_0 = 0$ y $\hat{u}^{(j+1)}_m = 0$.\\
+
+Matricializando el sistema, obtenemos la siguiente relación de recurrencia:
+\begin{equation*}
+	\hat{u}^{(j+1)} = (2 - 2\lambda^2) \hat{u}^{(j)} + \lambda^2 \mathbf{A} \hat{u}^{(j)} - \hat{u}^{(j-1)}
+\end{equation*}
+donde $\mathbf{A}$ es la matriz tridiagonal dada por:
+\begin{equation*}
+\mathbf{A} = 
+\begin{pmatrix}
+0 & 1 & 0 & \cdots & 0 \\
+1 & 0 & 1 & \ddots & \vdots \\
+0 & 1 & 0 & \ddots & 0 \\
+\vdots & \ddots & \ddots & \ddots & 1 \\
+0 & \cdots & 0 & 1 & 0
+\end{pmatrix}_{(m-1)\times(m-1)}
+\end{equation*}
+Esta matriz representa el operador de diferencias finitas para la segunda derivada espacial, considerando las condiciones de frontera homogéneas.
+
+Despejando $u_{i, j+1}$ (el valor en el nuevo nivel temporal):
+$$ u_{i, j+1} = 2u_{i, j} - u_{i, j-1} + \lambda^2 (u_{i+1, j} - 2u_{i, j} + u_{i-1, j}) $$
+$$ u_{i, j+1} = 2(1 - \lambda^2)u_{i, j} + \lambda^2(u_{i+1, j} + u_{i-1, j}) - u_{i, j-1} \quad (*) $$
+
+\subsection*{Representación 1: La Matriz Completa ($\mathbf{M}$)}
+
+Esta representación escribe la relación de recurrencia directamente como una operación lineal sobre el vector de soluciones $\mathbf{\hat{u}}^{(j)}$ en el tiempo $t_j$:
+$$ \mathbf{\hat{u}}^{(j+1)} = \mathbf{M} \mathbf{\hat{u}}^{(j)} - \mathbf{\hat{u}}^{(j-1)} $$
+donde $\mathbf{\hat{u}}^{(j)} = [u_{1, j}, u_{2, j}, \dots, u_{m-1, j}]^T$ es el vector de desplazamientos en el tiempo $t_j$.
+La matriz $\mathbf{M}$ es una matriz tridiagonal de tamaño $(m-1) \times (m-1)$, definida por los coeficientes de $u_{\cdot, j}$ en la ecuación $(*)$:
+$$ \mathbf{M} = 
+\begin{pmatrix}
+2(1 - \lambda^2) & \lambda^2 & 0 & \cdots & 0 \\
+\lambda^2 & 2(1 - \lambda^2) & \lambda^2 & \ddots & \vdots \\
+0 & \lambda^2 & 2(1 - \lambda^2) & \ddots & 0 \\
+\vdots & \ddots & \ddots & \ddots & \lambda^2 \\
+0 & \cdots & 0 & \lambda^2 & 2(1 - \lambda^2)
+\end{pmatrix} $$
+
+\subsection*{Representación 2: El Operador Espacial Separado ($\mathbf{A}$)}
+
+La segunda representación, que posee la matriz tridiagonal $\mathbf{A}$, factoriza la matriz en términos de la identidad ($\mathbf{I}$) y la matriz tridiagonal ($\mathbf{A}$) que representa la suma de los vecinos $(u_{i+1, j} + u_{i-1, j})$:
+$$ \mathbf{\hat{u}}^{(j+1)} = (2 - 2\lambda^2) \mathbf{\hat{u}}^{(j)} + \lambda^2 \mathbf{A} \mathbf{\hat{u}}^{(j)} - \mathbf{\hat{u}}^{(j-1)} \quad (**) $$
+donde $\mathbf{A}$ es:
+$$ \mathbf{A} = 
+\begin{pmatrix}
+0 & 1 & 0 & \cdots & 0 \\
+1 & 0 & 1 & \ddots & \vdots \\
+0 & 1 & 0 & \ddots & 0 \\
+\vdots & \ddots & \ddots & \ddots & 1 \\
+0 & \cdots & 0 & 1 & 0
+\end{pmatrix} $$
+
+\subsection*{Demostración de Equivalencia}
+
+Para demostrar la equivalencia, debemos mostrar que el factor que multiplica a $\mathbf{\hat{u}}^{(j)}$ en $(**)$ es igual a $\mathbf{M}$:
+$$ \mathbf{M} \stackrel{?}{=} (2 - 2\lambda^2) \mathbf{I} + \lambda^2 \mathbf{A} $$
+Donde $\mathbf{I}$ es la matriz identidad.
+
+$$ (2 - 2\lambda^2) \mathbf{I} + \lambda^2 \mathbf{A} = (2(1-\lambda^2))
+\begin{pmatrix}
+1 & 0 & 0 & \cdots \\
+0 & 1 & 0 & \cdots \\
+0 & 0 & 1 & \cdots \\
+\vdots & \vdots & \vdots & \ddots
+\end{pmatrix} 
++ \lambda^2
+\begin{pmatrix}
+0 & 1 & 0 & \cdots \\
+1 & 0 & 1 & \cdots \\
+0 & 1 & 0 & \cdots \\
+\vdots & \vdots & \vdots & \ddots
+\end{pmatrix} $$
+
+Aplicando la suma matricial:
+
+\begin{itemize}
+    \item \textbf{Diagonal Principal ($i=k$):} El elemento $M_{i,i}$ es el resultado de la suma de los términos diagonales:
+    $$ M_{i,i} = (2(1-\lambda^2)) \cdot 1 + \lambda^2 \cdot 0 = 2(1 - \lambda^2) $$
+    \item \textbf{Sub-diagonales ($|i-k|=1$):} El elemento $M_{i,i\pm 1}$ es el resultado de la suma de los términos fuera de la diagonal:
+    $$ M_{i,i\pm 1} = (2(1-\lambda^2)) \cdot 0 + \lambda^2 \cdot 1 = \lambda^2 $$
+\end{itemize}
+
+Sustituyendo estos valores, obtenemos:
+$$ (2 - 2\lambda^2) \mathbf{I} + \lambda^2 \mathbf{A} = 
+\begin{pmatrix}
+2(1 - \lambda^2) & \lambda^2 & 0 & \cdots & 0 \\
+\lambda^2 & 2(1 - \lambda^2) & \lambda^2 & \ddots & \vdots \\
+0 & \lambda^2 & 2(1 - \lambda^2) & \ddots & 0 \\
+\vdots & \ddots & \ddots & \ddots & \lambda^2 \\
+0 & \cdots & 0 & \lambda^2 & 2(1 - \lambda^2)
+\end{pmatrix} = \mathbf{M} $$
+
+El sistema anterior tiene un problema: cuando intentamos calcular el vector de aproximaciones $\hat{u}^{(1)}$ para $t=t_1$ que resulta de aplicar la recurrencia anterior para $j=0$, necesitamos conocer $\hat{u}^{(-1)}$ ¡Cuyos valores no conocemos!\\
+
+Observemos que aún no hemos aplicado la restricción de la condición inicial de velocidad, es decir, la segunda condición inicial:
+$$ \frac{\partial}{\partial t}u(x,0) = g(x), \quad x \in [0,L] $$
+que en términos de las aproximaciones en los nodos espaciales es:
+$$ \frac{\partial}{\partial t}u(x_i,0) = g(x_i), \quad i=0,1, \ldots, m $$
+Podemos utilizar esta condición para obtener una expresión para $\hat{u}^{(1)}$ en función de $\hat{u}^{(0)}$ y $g(x_i)$. Dicha restricción nos permitirá conocer el vector de aproximaciones $\hat{u}^{(1)}$ de la forma siguiente:
+Aproximamos $\frac{\partial}{\partial t}u(x_i,0)$ usando la diferencia dividida siguiente:
+\begin{align*}
+\frac{\partial g}{\partial t}(x_i,0)= & \frac{u(x_i,t_1)-u(x_i,0)}{k}-\frac{k}{2}\frac{\partial^2 u}{\partial t^2}(x_i,\tilde{\mu}_i)\\ = & \frac{u(x_i,t_1)-f(x_i)}{k}-\frac{k}{2}\frac{\partial^2 u}{\partial t^2}(x_i,\tilde{\mu}_i)=g(x_i),
+\end{align*}
+
+donde $\tilde{\mu}_i \in (0,t_1)$. Despejando $u(x_i,t_1)$, obtenemos:
+$$ u(x_i,t_1) = f(x_i) + k g(x_i) + \frac{k^2}{2} \frac{\partial^2 u}{\partial t^2}(x_i,\tilde{\mu}_i) $$
+Aproximando $\frac{\partial^2 u}{\partial t^2}(x_i,\tilde{\mu}_i)$ usando la ecuación de ondas, obtenemos:
+$$ \frac{\partial^2 u}{\partial t^2}(x_i,\tilde{\mu}_i) = c^2 \frac{\partial^2 u}{\partial x^2}(x_i,\tilde{\mu}_i) $$
+Aproximando $\frac{\partial^2 u}{\partial x^2}(x_i,\tilde{\mu}_i)$ usando diferencias finitas centradas, obtenemos:
+$$ \frac{\partial^2 u}{\partial x^2}(x_i,\tilde{\mu}_i) \approx \frac{u(x_{i+1},\tilde{\mu}_i) - 2u(x_i,\tilde{\mu}_i) + u(x_{i-1},\tilde{\mu}_i)}{h^2} $$
+Sustituyendo esta aproximación en la expresión para $u(x_i,t_1)$, obtenemos:
+$$ u(x_i,t_1) \approx f(x_i) + k g(x_i) + \frac{c^2 k^2}{2h^2} \left( u(x_{i+1},\tilde{\mu}_i) - 2u(x_i,\tilde{\mu}_i) + u(x_{i-1},\tilde{\mu}_i) \right) $$
+
+El problema es que hemos usado una aproximación con error de orden lineal temporal $O(k)$ y cuadrático espacial $O(h^2)$ para obtener una expresión para $u(x_i,t_1)$. Sin embargo, podemos mejorar la precisión de esta expresión utilizando el esquema de diferencias finitas explícito \ref{eqn1} para aproximar $u(x_i,t_1)$. Esto hará que nuestras aproximaciones futuras se vean afectadas por dicho error.\\
+
+Para mejorar la aproximación de $u(x_i,t_1)$, desarrollamos por Taylor $u(x_i,t_1)$ alrededor de $t=0$ hasta el segundo orden para $i=1,2,\ldots,m-1$:
+
+\begin{align*}
+u(x_i,t_1)=& u(x_i,0)+k\frac{\partial u}{\partial t}(x_i,0)+\frac{k^2}{2}\frac{\partial^2 u}{\partial t^2}(x_i,0)+\frac{k^3}{6}\frac{\partial^3 u}{\partial t^3}(x_i,\hat{\mu}_i)\\ 
+= & f(x_i)+k g(x_i)+\frac{k^2}{2}\frac{\partial^2 u}{\partial t^2}(x_i,0)+\frac{k^3}{6}\frac{\partial^3 u}{\partial t^3}(x_i,\hat{\mu}_i),
+\end{align*}
+
+donde $\hat{\mu}_i \in (0,t_1)$. Usando la ecuación de ondas, podemos escribir $\frac{\partial^2 u}{\partial t^2}(x_i,0)$ al considerar que $u(x_i,0)=f(x_i)$, si suponemos que $f$ es dos veces diferenciable, obtenemos:
+$$ \frac{\partial^2 u}{\partial t^2}(x_i,0) = c^2 \frac{\partial^2 f}{\partial x^2}(x_i) $$
+Aproximando $\frac{\partial^2 f}{\partial x^2}(x_i)$ usando diferencias finitas centradas, obtenemos:
+$$ \frac{\partial^2 f}{\partial x^2}(x_i) \approx \frac{f(x_{i+1}) - 2f(x_i) + f(x_{i-1})}{h^2} $$
+Sustituyendo esta aproximación en la expresión para $u(x_i,t_1)$, obtenemos:
+$$ u(x_i,t_1) \approx f(x_i) + k g(x_i) + \frac{c^2 k^2}{2h^2} \left( f(x_{i+1}) - 2f(x_i) + f(x_{i-1}) \right) + \frac{k^3}{6} \frac{\partial^3 u}{\partial t^3}(x_i,\hat{\mu}_i) $$
+Esta expresión tiene un error de orden $O(k^3 + k^2 h^2)$, que es más preciso que la aproximación anterior.\\
+
+En el caso de que no exista la derivada segunda de la función $f$, podemos aproximar $f''(x_i)$ usando diferencias finitas centradas directamente sobre los valores de $f$ en los nodos espaciales:
+\[f''(x_i)=\frac{f(x_{i+1})-2f(x_i)+f(x_{i-1})}{h^2}-\frac{h^2}{12}f^{(4)}(\tilde{\xi}),\]
+donde $\tilde{\xi} \in (x_{i-1},x_{i+1})$. Así, la expresión para $u(x_i,t_1)$ queda como:
+\begin{align*}
+\hat{u}_{i1}= & \hat{u}(x_i,t_1)=f(x_i)+kg(x_i)+\frac{\alpha^2 k^2}{2h^2}(f(x_{i+1})-2f(x_i)+f(x_{i-1})),\\
+= & f(x_i)+kg(x_i)+\frac{\lambda^2}{2}(f(x_{i+1})-2f(x_i)+f(x_{i-1}))\\
+= & \left(1-\lambda^2\right)f(x_i)+\frac{\lambda^2}{2}(f(x_{i+1})+f(x_{i-1}))+kg(x_i),
+\end{align*}
+para $i=1,2,\ldots,m-1$ con error de truncamiento $O(k^3+h^2)$.\\
+
+
+
+
+
+
+
+
+\printbibliography[heading=bibintoc]
+
+\end{document}
