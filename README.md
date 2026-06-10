@@ -1,5 +1,4 @@
-# Physical Modeling
-
+# DEEP LEARNING
 A structured course repository at the intersection of computational physics and scientific machine learning — progressing from classical ODE/PDE numerical methods and quantum mechanics simulations through deep neural networks, Physics-Informed Neural Networks (PINNs), quantum computing, and, finally, hardware-deployable quantized models for LHC particle jet classification.
 
 Implementations span Python, C++, Fortran 90, and C, with exams backed by full LaTeX reports.
